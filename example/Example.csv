@@ -1,0 +1,13 @@
+Place,Title,Name,Type,Latitude,Longitude,Code,Enclosed_by,Date
+
+Person,Surname,Given,Call,Nickname,Suffix,Prefix,Title,Gender,Birth date,Birth place,Birth source,Baptism date,Baptism place,Baptism source,Death date,Death place,Death source,Burial date,Burial place,Burial source,Note
+I0000,Schmidt,Max,,,,,,male,1965-01-01,,,,,,1582-05-12,,,,,,Addition Note
+I0001,Schmidt,Sarah,,,,,,female,1964-03-02,,,,,,,,,,,,Addition Note
+I0002,Schmidt,Ines,,,,,,female,1985-01-31,,,,,,,,,,,,
+
+Marriage,Husband,Wife,Date,Place,Source,Note
+F0000,I0000,I0001,,,,
+
+Family,Child
+F0000,I0002
+

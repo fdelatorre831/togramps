@@ -1,0 +1,15 @@
+[project]
+name = "togramps"
+version = "0.1.0"
+description = "Conversion tool for QuickFamilyTree files to Gramps Web CSV."
+authors = [
+    {name = "Jonas Schäfer", email = "jonas.schaefer00@gmail.com"},
+]
+dependencies = ["pandas>=2.3.3"]
+requires-python = "==3.13.*"
+readme = "README.md"
+license = {text = "MIT"}
+
+
+[tool.pdm]
+distribution = false
