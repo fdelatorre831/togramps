@@ -28,27 +28,68 @@ def extract_data_ftt(source_file: Path, temp_dir: Path) -> Tuple[pd.DataFrame, p
         for i, line in enumerate(file):
             if i == 0: # skip header
                 continue
-            values = re.split(r'\s+', line.strip())
+            tokens = line.rstrip("\n").split()
 
-            if len(values) > 12: # person record
-                # TODO: introduce name handling for multiple word first/last names
-                last_name = values[12]
-                first_name = values[13]
-                safe_last_name = last_name if len(last_name) > 1 else ''
-                safe_first_name = first_name if len(first_name) > 1 else ''
-                n_names = (len(last_name) > 1) + (len(first_name) > 1)
-                offset = 2 - n_names
+            if len(tokens) > 12:
+                # fixed-width numeric section
+                base = tokens[:12]
 
-                # handle multi-word notes
-                note_vals = values[(23-offset):]
-                notes = ""
-                if len(note_vals) > 0:
-                    notes = " ".join(note_vals)
-                values = values[:12] + [safe_last_name, safe_first_name] + values[(12+n_names):(23-offset)] + [notes]
-                person_data.append(values)
+                # everything between col 12 and the first numeric birth field is name
+                rest = tokens[12:]
 
-            else: # relationship record
-                relationship_data.append(values)
+                # find first numeric field (birth_year)
+                split_idx = None
+                for i, t in enumerate(rest):
+                    if re.fullmatch(r"-?\d+", t):
+                        split_idx = i
+                        break
+
+                if split_idx is None:
+                    name_tokens = rest
+                    numeric = []
+                else:
+                    name_tokens = rest[:split_idx]
+                    numeric = rest[split_idx:]
+
+                # last token of name = given name, rest = surname
+                if len(name_tokens) == 0:
+                    last_name = ""
+                    first_name = ""
+                elif len(name_tokens) == 1:
+                    last_name = name_tokens[0]
+                    first_name = ""
+                else:
+                    last_name = " ".join(name_tokens[:-1])
+                    first_name = name_tokens[-1]
+
+                # normalize casing
+                last_name = last_name.strip()
+                first_name = first_name.strip()
+
+                # pad numeric fields safely
+                numeric = numeric + [""] * (11 - len(numeric))
+
+                birth_year, birth_month, birth_day = numeric[0:3]
+                death_year, death_month, death_day = numeric[4:7]
+                gender = numeric[7]
+                notes = " ".join(numeric[8:]).strip()
+
+                row = base + [
+                    last_name,
+                    first_name,
+                    None,
+                    birth_year,
+                    birth_month,
+                    birth_day,
+                    None,
+                    death_year,
+                    death_month,
+                    death_day,
+                    gender,
+                    notes
+                ]
+
+                person_data.append(row)
 
     person_df = pd.DataFrame(person_data, columns=FTT_PERSON_COLS)
     relationship_df = pd.DataFrame(relationship_data, columns=FTT_RELATIONSHIPS_COLS)
